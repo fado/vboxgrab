@@ -6,15 +6,16 @@ VM = 'Wintest'
 SNAPSHOT = 'Testshot'
 USER = 'Padraig'
 PASSWORD = 'password'
-DESTINATION = os.path.normpath('/home/pdonnelly/Dropbox/PhD/code/vboxgrab/qux.txt')
+DESTINATION = os.path.normpath('/home/pdonnelly/Dropbox/PhD/code/vboxgrab')
 FILE = os.path.normpath('C:\Users\Padraig\Desktop\qux.txt')
 
 LIST = 'VBoxManage list runningvms'
 RESTORE = 'VBoxManage snapshot %s restore %s' % (VM, SNAPSHOT)
 STOP = 'VBoxManage controlvm %s poweroff' % VM
 START = 'VBoxManage startvm %s --type headless' % VM
-COPY = 'VBoxManage guestcontrol %s copyfrom --username %s --password %s '\
-        '--target-directory %s %s' % (VM, USER, PASSWORD, DESTINATION, FILE)
+COPY = 'VBoxManage guestcontrol %s copyfrom '\
+        '%s --target-directory %s '\
+        '--username %s --password %s --verbose' % (VM, FILE, DESTINATION, USER, PASSWORD)
 
 def is_running():
     runningvms = subprocess.Popen(LIST.split(), stdout=subprocess.PIPE).communicate()[0]
@@ -54,14 +55,6 @@ if __name__ == '__main__':
         print 'VM started.'
     else:
         print 'Failed to start the VM. Sorry.'
-
-    # Create the file we're going to be writing to.
-    with open(DESTINATION, 'w+') as fh:
-        fh.close()
-    # And make sure we can write to it.
-    os.chmod(DESTINATION, 0o666)
-
-    subprocess.call(COPY.split(), shell=False)
 
     # Stop that mother.
     stop_vm()
