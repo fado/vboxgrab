@@ -1,6 +1,9 @@
 import os
 import re
 import subprocess
+import xmlrpclib
+from socket import error as socket_error
+from socket import timeout
 
 VM = 'Wintest'
 SNAPSHOT = 'Testshot'
@@ -16,6 +19,7 @@ START = 'VBoxManage startvm %s --type headless' % VM
 COPY = 'VBoxManage guestcontrol %s copyfrom '\
         '%s --target-directory %s '\
         '--username %s --password %s --verbose' % (VM, FILE, DESTINATION, USER, PASSWORD)
+IP = 'VBoxManage guestproperty get %s /VirtualBox/GuestInfo/Net/0/V4/IP' % VM
 
 def is_running():
     runningvms = subprocess.Popen(LIST.split(), stdout=subprocess.PIPE).communicate()[0]
@@ -28,6 +32,16 @@ def stop_vm():
     subprocess.call(STOP.split(), shell=False)
     while is_running():
         sleep(1)
+
+def get_ip():
+    guestproperties = subprocess.Popen(IP.split(), stdout=subprocess.PIPE)
+    for guestproperty in guestproperties.stdout:
+        ip = guestproperty.split()[-1]
+        print "I got %s as the IP address of the VM." % ip
+        return ip
+
+def get_server():
+    return xmlrpclib.ServerProxy('http://%s:9000' % get_ip())
 
 if __name__ == '__main__':
 
@@ -55,6 +69,13 @@ if __name__ == '__main__':
         print 'VM started.'
     else:
         print 'Failed to start the VM. Sorry.'
+
+    server = get_server()
+
+    try:
+        print server.get_url()
+    except socket_error as error:
+        print "Connection timed out."
 
     # Stop that mother.
     stop_vm()
