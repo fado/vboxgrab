@@ -4,13 +4,15 @@ import subprocess
 import xmlrpclib
 from socket import error as socket_error
 from socket import timeout
+from time import sleep
 
 VM = 'Wintest'
 SNAPSHOT = 'Testshot'
 USER = 'Padraig'
 PASSWORD = 'password'
 DESTINATION = os.path.normpath('/home/pdonnelly/Dropbox/PhD/code/vboxgrab')
-FILE = os.path.normpath('C:\Users\Padraig\Desktop\qux.txt')
+FILE = os.path.normpath('C:\Users\Padraig\Desktop\# DECRYPT MY FILES #.txt')
+CERBER = os.path.normpath('C:\current\cerber.exe')
 
 LIST = 'VBoxManage list runningvms'
 RESTORE = 'VBoxManage snapshot %s restore %s' % (VM, SNAPSHOT)
@@ -20,6 +22,7 @@ COPY = 'VBoxManage guestcontrol %s copyfrom '\
         '%s --target-directory %s '\
         '--username %s --password %s --verbose' % (VM, FILE, DESTINATION, USER, PASSWORD)
 IP = 'VBoxManage guestproperty get %s /VirtualBox/GuestInfo/Net/0/V4/IP' % VM
+RUN = 'VBoxManage %s run --exe %s' % (VM, CERBER)
 
 def is_running():
     runningvms = subprocess.Popen(LIST.split(), stdout=subprocess.PIPE).communicate()[0]
@@ -69,6 +72,11 @@ if __name__ == '__main__':
         print 'VM started.'
     else:
         print 'Failed to start the VM. Sorry.'
+
+    print "Infecting the VM with Cerber."
+    subprocess.call(RUN.split(), shell=False)
+    print "Waiting 120 seconds for encryption to complete."
+    sleep(120)
 
     server = get_server()
 
