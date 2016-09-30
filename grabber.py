@@ -30,24 +30,30 @@ def stop_vm():
 
 if __name__ == '__main__':
 
+    # Check we're not trying to start a VM that's already running.
     if is_running():
         print 'VM already running. Stopping it.'
         stop_vm()
 
+    # Restore the snapshot.
     subprocess.call(RESTORE.split(), shell=False)
 
+    # Start the VM.
     with open(os.devnull, 'w') as devnull:
         startvm = subprocess.call(START.split(), stdout=devnull,
                 stderr=devnull, shell=False)
 
+    # Check it's running.
     if is_running():
         print 'VM started.'
     else:
         print 'Failed to start the VM. Sorry.'
 
+    # Create the file we're going to be writing to.
     with open(DIRECTORY, 'w+') as fh:
         fh.close()
     subprocess.call(COPY.split(), shell=False)
 
+    # Stop that mother.
     stop_vm()
 
